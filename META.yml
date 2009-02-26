@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                Dackup
-version:             0.33
+version:             0.34
 abstract:            Back up files over the network
 license:             perl
 author:              
@@ -19,7 +19,7 @@ requires:
     Net::Mosso::CloudFiles:        0.35
     Net::OpenSSH:                  0.30
     Path::Class:                   0
-    Term::ProgressBar::Simple:     0
+    Term::ProgressBar::Simple:     0.03
 meta-spec:
     url:     http://module-build.sourceforge.net/META-spec-v1.3.html
     version: 1.3
