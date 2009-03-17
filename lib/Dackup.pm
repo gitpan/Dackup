@@ -14,7 +14,7 @@ use List::Util qw(sum);
 use Path::Class;
 use Term::ProgressBar::Simple;
 
-our $VERSION = '0.40';
+our $VERSION = '0.41';
 
 has 'directory' => (
     is       => 'ro',
@@ -79,6 +79,7 @@ sub backup {
 
     my $total = sum map { $_->size } @$entries_to_update;
     $total += scalar(@$entries_to_delete) if $delete;
+    $total = 0 unless defined $total;
 
     my $progress = Term::ProgressBar::Simple->new($total);
     $progress->message(
