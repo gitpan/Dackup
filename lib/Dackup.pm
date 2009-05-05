@@ -8,19 +8,27 @@ use Dackup::Target::CloudFiles;
 use Dackup::Target::Filesystem;
 use Dackup::Target::S3;
 use Dackup::Target::SSH;
-use DBI;
 use Data::Stream::Bulk::Path::Class;
+use DBI;
+use Devel::CheckOS qw(os_is);
+use File::HomeDir;
 use List::Util qw(sum);
+use Number::DataRate;
 use Path::Class;
 use Term::ProgressBar::Simple;
 
-our $VERSION = '0.41';
+our $VERSION = '0.42';
 
 has 'directory' => (
     is       => 'ro',
     isa      => 'Path::Class::Dir',
-    required => 1,
+    required => 0,
     coerce   => 1,
+    default  => sub {
+        my $self = shift;
+        return dir( File::HomeDir->my_data,
+            ( os_is('MicrosoftWindows') ? 'Perl' : '.perl' ), 'Dackup' );
+    },
 );
 has 'source' => (
     is       => 'ro',
@@ -51,13 +59,24 @@ has 'cache' => (
     is  => 'rw',
     isa => 'Dackup::Cache',
 );
+has 'throttle' => (
+    is  => 'ro',
+    isa => 'Str',
+);
 
 __PACKAGE__->meta->make_immutable;
 
 sub BUILD {
-    my $self     = shift;
-    my $filename = file( $self->directory, 'dackup.db' );
-    my $cache    = Dackup::Cache->new( filename => $filename );
+    my $self      = shift;
+    my $directory = $self->directory;
+
+    unless ( -d $directory ) {
+        $directory->mkpath
+            || confess "Unable to create directory $directory: $!";
+    }
+
+    my $filename = file( $directory, 'dackup.db' );
+    my $cache = Dackup::Cache->new( filename => $filename );
     $self->cache($cache);
     $self->source->dackup($self);
     $self->destination->dackup($self);
@@ -176,12 +195,12 @@ Dackup - Flexible file backup
       prefix => '/home/acme/backup/' );
 
   my $dackup = Dackup->new(
-      directory   => '/home/acme/dackup/',
       source      => $source,
       destination => $destination,
       delete      => 0,
       dry_run     => 0,
       verbose     => 1,
+      throttle    => '1Mbps',
   );
   $dackup->backup;
 
@@ -192,10 +211,10 @@ copying to and from filesystems, remote hosts via SSH, Amazon's
 Simple Storage Service and Mosso's CloudFiles. At all stages,
 it checks the MD5 hash of the source and destination files.
 
-It uses a MD5 cache to speed up operations, so you must select
-a directory in which to save the cache. It's just a cache, so
-you can delete it, but the next time you sync it might be a
-little slower.
+It uses an MD5 cache to speed up operations, which it stores by
+default in your home directory (you can pass it as a directory
+parameter). It's just a cache, so you can delete it, but the next
+time you sync it might be a little slower.
 
 It will update new and changed files. If you pass in 
 delete => 1 then it will also delete removed files.

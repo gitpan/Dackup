@@ -225,15 +225,28 @@ sub update {
 
         unless ( $directories->{$destination_directory} ) {
 
-            #warn "mkdir -p $destination_directory";
-            $ssh->system("mkdir -p $destination_directory")
-                || die "mkdir -p failed: " . $ssh->error;
+            my $quoted_destination_directory
+                = $ssh->shell_quote("$destination_directory");
+
+            # warn "mkdir -p $quoted_destination_directory";
+            $ssh->system("mkdir -p $quoted_destination_directory")
+                || die "mkdir -p $quoted_destination_directory failed: "
+                . $ssh->error;
             $directories->{$destination_directory} = 1;
         }
 
         #warn "$source_filename -> $destination_filename";
 
-        $ssh->scp_put( "$source_filename", "$destination_filename" )
+        my $scp_options = {};
+        my $throttle    = $self->dackup->throttle;
+        if ($throttle) {
+            my $data_rate       = Number::DataRate->new;
+            my $bits_per_second = $data_rate->to_bits_per_second($throttle);
+            $scp_options->{bwlimit} = $bits_per_second / 1000;    # in Kbit/s
+        }
+
+        $ssh->scp_put( $scp_options, "$source_filename",
+            "$destination_filename" )
             || die "scp failed: " . $ssh->error;
     } else {
         confess "Do not know how to update from $source_type";
@@ -275,7 +288,6 @@ Dackup::Target::SSH - Flexible file backup remote hosts via SSH
   );
 
   my $dackup = Dackup->new(
-      directory   => '/home/acme/dackup',
       source      => $source,
       destination => $destination,
       delete      => 0,
