@@ -17,7 +17,7 @@ use Number::DataRate;
 use Path::Class;
 use Term::ProgressBar::Simple;
 
-our $VERSION = '0.43';
+our $VERSION = '0.44';
 
 has 'directory' => (
     is       => 'ro',
@@ -131,6 +131,7 @@ sub backup {
     $progress->message( 'Deleted ' . scalar(@$entries_to_delete) . ' files' )
         if $delete;
 
+    return scalar(@$entries_to_update);
 }
 
 sub _calc {

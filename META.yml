@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:               Dackup
-version:            0.43
+version:            0.44
 abstract:           Back up files over the network
 author:
     - Leon Brocard <acme@astray.com>
@@ -17,6 +17,7 @@ requires:
     Devel::CheckOS:       0
     Digest::MD5::File:    0
     File::HomeDir:        0
+    File::Temp:           0
     Moose:                0
     MooseX::StrictConstructor:  0
     MooseX::Types::Path::Class:  0
@@ -26,6 +27,7 @@ requires:
     Number::DataRate:     0
     Path::Class:          0
     Term::ProgressBar::Simple:  0.03
+    Test::More:           0
 no_index:
     directory:
         - t

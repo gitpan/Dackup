@@ -10,5 +10,6 @@ lib/Dackup/Target/SSH.pm
 Makefile.PL
 MANIFEST
 README
+t/filesystem.t
 t/pod.t
 META.yml                                 Module meta-data (added by MakeMaker)

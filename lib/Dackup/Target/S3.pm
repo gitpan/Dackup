@@ -53,11 +53,7 @@ sub object {
 
 sub name {
     my ( $self, $entry ) = @_;
-    return
-          's3://'
-        . $self->bucket->name . '/'
-        . $self->prefix
-        . $entry->key;
+    return 's3://' . $self->bucket->name . '/' . $self->prefix . $entry->key;
 }
 
 sub update {
@@ -97,6 +93,9 @@ Dackup::Target::S3 - Flexible file backup to/from Amazon S3
   );
 
   my $client = Net::Amazon::S3::Client->new( s3 => $s3 );
+  
+  # You must have already created this bucket
+  # see Net::Amazon::S3::Client
   my $bucket = $client->bucket( name => 'mybackups' );
 
   my $source = Dackup::Target::Filesystem->new(
